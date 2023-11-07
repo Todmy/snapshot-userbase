@@ -1,0 +1,12 @@
+{
+  "name": "snapshot-userbase",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "git@github.com:Todmy/snapshot-userbase.git",
+  "author": "Dmytro Tolok <tolok.d@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "@ethersproject/address": "^5.7.0",
+    "@snapshot-labs/snapshot.js": "^0.8.1"
+  }
+}
