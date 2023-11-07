@@ -10,6 +10,14 @@
     "@snapshot-labs/snapshot.js": "^0.8.1",
     "connection-string": "^4.4.0",
     "dotenv": "^16.3.1",
-    "mysql2": "^3.6.3"
+    "mysql2": "^3.6.3",
+    "nodemon": "^3.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.8.10"
+  },
+  "scripts": {
+    "dev": "nodemon index.ts",
+    "start": "ts-node index.ts"
   }
 }
