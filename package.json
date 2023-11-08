@@ -8,16 +8,21 @@
   "dependencies": {
     "@ethersproject/address": "^5.7.0",
     "@snapshot-labs/snapshot.js": "^0.8.1",
+    "axios": "^1.6.1",
+    "cheerio": "^1.0.0-rc.12",
     "connection-string": "^4.4.0",
     "dotenv": "^16.3.1",
     "mysql2": "^3.6.3",
-    "nodemon": "^3.0.1"
+    "nodemon": "^3.0.1",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.2.2"
   },
   "devDependencies": {
     "@types/node": "^20.8.10"
   },
   "scripts": {
-    "dev": "nodemon index.ts",
-    "start": "ts-node index.ts"
+    "build": "tsc -p tsconfig.json",
+    "dev": "nodemon src/index.ts",
+    "start": "ts-node src/index.ts"
   }
 }
