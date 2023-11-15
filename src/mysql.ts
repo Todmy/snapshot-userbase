@@ -2,7 +2,7 @@ import mysql from 'mysql2/promise';
 import { ConnectionString } from 'connection-string';
 export { OkPacket, FieldPacket } from 'mysql2/promise';
 
-const { protocol: remProtocol, hosts: remHosts, path: remPath, ...remConfig } = new ConnectionString(process.env.DATABASE_URL || '');
+const { protocol: remProtocol, hosts: remHosts, path: remPath, ...remConfig } = new ConnectionString(process.env.REMOTE_DATABASE_URL || '');
 const remDB: mysql.Pool = mysql.createPool({
   ...remConfig,
   host: remHosts?.[0].name,
