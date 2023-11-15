@@ -2,33 +2,45 @@ import 'dotenv/config';
 import { locDB } from './mysql';
 import { load } from 'cheerio';
 import axios from 'axios';
+import { scrapeWebsite } from './curlExec';
 
-const DEV_MODE = true;
+const DEV_MODE = process.env.DEV_MODE === 'true' || false;
+const LOAD_IN_BATCHES = process.env.LOAD_IN_BATCHES === 'true' || true;
+const USE_AXIOS = process.env.USE_AXIOS === 'true' || false;
 
 const supportedNetworks = {
   '1': 'https://etherscan.io/address/',
-  '10': 'https://optimistic.etherscan.io/address/',
-  '25': 'https://cronoscan.com/address/',
   '56': 'https://bscscan.com/address/',
-  '69': 'https://testnet.bscscan.com/address/',
-  '100': 'https://gnosisscan.io/address/',
   '137': 'https://polygonscan.com/address/',
-  '199': 'https://bttcscan.com/address/',
   '250': 'https://ftmscan.com/address/',
-  '1101': 'https://zkevm.polygonscan.com/address/',
-  '1284': 'https://moonscan.io/address/',
-  '1285': 'https://moonriver.moonscan.io/address/',
-  '42161': 'https://arbiscan.io/address/',
-  '42170': 'https://nova.arbiscan.io/',
-  '42220': 'https://celoscan.io/address/',
+  // less popular networks 
+  // '10': 'https://optimistic.etherscan.io/address/',
+  // '25': 'https://cronoscan.com/address/',
+  // '100': 'https://gnosisscan.io/address/',
+  // '199': 'https://bttcscan.com/address/',
+  // '1101': 'https://zkevm.polygonscan.com/address/',
+  // '1284': 'https://moonscan.io/address/',
+  // '1285': 'https://moonriver.moonscan.io/address/',
+  // '42161': 'https://arbiscan.io/address/',
+  // '42170': 'https://nova.arbiscan.io/',
+  // '42220': 'https://celoscan.io/address/',
 };
-
 
 async function fetchData(address, network = '1', skipMultiChain = false) {
   const url = supportedNetworks[network];
   console.log('url |', `${url}${address}`);
-  const response = await axios.get(`${url}${address}`)
-  const html = response.data;
+  let html = '';
+  try {
+    if (USE_AXIOS) {
+      const response = await axios.get(`${url}${address}`)
+      html = response.data;
+    } else {
+      html = await scrapeWebsite(`${url}${address}`);
+    }
+  } catch (error) {
+    console.log('error |', error);
+    throw error;
+  }
   const $ = load(html);
   const balanceSelector = '#ContentPlaceHolder1_divTokenHolding #dropdownMenuBalance';
   const transactionSelector = '#ContentPlaceHolder1_divTxDataInfo p'
@@ -39,6 +51,15 @@ async function fetchData(address, network = '1', skipMultiChain = false) {
   const balanceHtml = $(balanceSelector).text().replace(/\n/g, '').trim();
   const transactionsHtml = $(transactionSelector).text().replace(/\n/g, '').trim();
   const contractHtml = $(contractSelector);
+
+  const title = $('title').text().trim();
+  
+  const isValidPage = title.includes(`Address ${address}`);
+
+  if (!isValidPage) {
+    console.log(`${url}${address}\n`, html)
+    throw new Error('We are detected as bot');
+  }
 
   const token = tokenHtml ? parseFloat(tokenHtml) : 0;
 
@@ -136,6 +157,23 @@ async function getAddress(tryCount = 0) {
   }
 }
 
+async function getMultipleAddresses(count) {
+  const addresses: any[] = [];
+  for (let i = 0; i < count; i++) {
+    try {
+      const address = await getAddress();
+      addresses.push(address);
+    } catch (error) {
+      if (addresses.length === 0) {
+        throw error;
+      } else {
+        break;
+      }
+    }
+  }
+  return addresses;
+}
+
 async function updateAssets(assets) {
   try {
     const isContract = assets[0].isContract;
@@ -176,22 +214,24 @@ async function updateAssets(assets) {
   }
 }
 
+function delay(ms: number) {
+  const randomDelay = Math.floor(Math.random() * ms) + Math.floor(ms / 2);
+  return new Promise( resolve => setTimeout(resolve, randomDelay) );
+}
+
 (async function() {
   let i = 0;
   while (true) {
     try {
-      if (DEV_MODE) {
-        const addresses: any[] = [];
-        for (let j = 0; j < 10; j++) {
-          const address = await getAddress();
-          addresses.push(address);
-        }
+      if (LOAD_IN_BATCHES) {
+        const addresses = await getMultipleAddresses(5);
 
         const assets = await Promise.all(addresses.map((address) => fetchData(address)));
         await Promise.all(assets.map((asset) => updateAssets(asset).then(() => {
           i++;
           console.log('iteration:', i, '| address:', asset[0].address);
         })));
+        await delay(5000);
       } else {
         const address = await getAddress();
         const assets = await fetchData(address);
@@ -202,6 +242,9 @@ async function updateAssets(assets) {
     } catch (error: any) {
       if (error.message === 'Too many tries. Do we reach the end?') {
         console.log('We reach the end');
+        break;
+      } else if (error.message === 'We are detected as bot') {
+        console.log('We are detected as bot');
         break;
       }
     }
