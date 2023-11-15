@@ -22,10 +22,7 @@
     "@types/node": "^20.8.10"
   },
   "scripts": {
-    "build": "tsc -p tsconfig.json",
-    "dev": "nodemon src/index.ts",
-    "start": "ts-node src/index.ts",
-    "inspect": "node --inspect build/src/index.js",
-    "load-users": "ts-node src/load-users.ts"
+    "load-users": "ts-node src/load-users.ts",
+    "scrape-users": "ts-node src/scrapper.ts"
   }
 }
