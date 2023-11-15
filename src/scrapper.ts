@@ -7,6 +7,7 @@ import { scrapeWebsite } from './curlExec';
 const DEV_MODE = process.env.DEV_MODE === 'true' || false;
 const LOAD_IN_BATCHES = process.env.LOAD_IN_BATCHES === 'true' || true;
 const USE_AXIOS = process.env.USE_AXIOS === 'true' || false;
+const BATCH_SIZE = parseInt(process.env.BATCH_SIZE || '1');
 
 const supportedNetworks = {
   '1': 'https://etherscan.io/address/',
@@ -224,7 +225,7 @@ function delay(ms: number) {
   while (true) {
     try {
       if (LOAD_IN_BATCHES) {
-        const addresses = await getMultipleAddresses(5);
+        const addresses = await getMultipleAddresses(BATCH_SIZE);
 
         const assets = await Promise.all(addresses.map((address) => fetchData(address)));
         await Promise.all(assets.map((asset) => updateAssets(asset).then(() => {
