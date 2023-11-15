@@ -15,9 +15,9 @@ function fetchUniqueUsers() {
             ELSE FALSE
         END AS is_author
     FROM 
-        defaultdb.votes AS v
+        votes AS v
     LEFT JOIN 
-        defaultdb.proposals AS p ON v.voter COLLATE utf8mb4_unicode_ci = p.author COLLATE utf8mb4_unicode_ci
+        proposals AS p ON v.voter COLLATE utf8mb4_unicode_ci = p.author COLLATE utf8mb4_unicode_ci
     WHERE 
         v.voter > '${lastProcessedVoter}'
         AND v.space != 'linea-build.eth'
