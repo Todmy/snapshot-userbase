@@ -45,7 +45,7 @@ async function fetchData(address, network = '1', skipMultiChain = false) {
   const $ = load(html);
   const balanceSelector = '#ContentPlaceHolder1_divTokenHolding #dropdownMenuBalance';
   const transactionSelector = '#ContentPlaceHolder1_divTxDataInfo p'
-  const tokenSelector = 'h4:contains(\'ETH Balance\') + div > div';
+  const tokenSelector = 'h4:contains(\'Balance\') + div > div';
   const contractSelector = '#ContentPlaceHolder1_li_contracts';
   
   const tokenHtml = $(tokenSelector).text().replace(/\n/g, '').trim();
@@ -62,13 +62,14 @@ async function fetchData(address, network = '1', skipMultiChain = false) {
     throw new Error('We are detected as bot');
   }
 
-  const token = tokenHtml ? parseFloat(tokenHtml) : 0;
+  const tokenMatch = tokenHtml.match(/\$?(\d{1,3}(,\d{3})*(\.\d+)?)/);
+  const token = tokenMatch ? parseFloat(tokenMatch[1].replace(/,/g, '')) : 0;
 
   let balanceMatch = balanceHtml.match(/\$?(\d{1,3}(,\d{3})*(\.\d+)?)/);
   let balance = balanceMatch ? parseFloat(balanceMatch[1].replace(/,/g, '')) : 0;
 
   const transactionMatch = transactionsHtml.match(/(\d+)\s*transactions/);
-  const transactions = transactionMatch ? parseInt(transactionMatch[1]) : 0;
+  const transactions = transactionMatch ? parseInt(transactionMatch[1].replace(',', '')) : 0;
 
   const isContract = contractHtml.length > 0;
 
@@ -232,7 +233,7 @@ function delay(ms: number) {
           i++;
           console.log('iteration:', i, '| address:', asset[0].address);
         })));
-        await delay(5000);
+        await delay(3000);
       } else {
         const address = await getAddress();
         const assets = await fetchData(address);
