@@ -23,6 +23,8 @@
   },
   "scripts": {
     "load-users": "ts-node src/load-users.ts",
-    "scrape-users": "ts-node src/scrapper.ts"
+    "scrape-users": "ts-node src/scrapper.ts",
+    "fetch-base-assets": "ts-node src/fetch-base-assets.ts",
+    "check-contracts": "ts-node src/check-contracts.ts"
   }
 }
