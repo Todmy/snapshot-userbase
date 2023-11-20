@@ -27,7 +27,7 @@ async function fetchData(network, addresses) {
     return balances;
   } catch (error) {
     console.log('Error fetching balances! from address', addresses[0], ' to ', addresses[addresses.length - 1]);
-    throw error;
+    throw `Error fetching balances! from address ${addresses[0]} to ${addresses[addresses.length - 1]}`
   }
 }
 
@@ -35,7 +35,7 @@ async function getAddresses(chunkSize: number, iteration: number): Promise<strin
   const query = `
     SELECT address
     FROM users
-    WHERE address > '0x00'
+    WHERE address >= '0x00'
     ORDER BY address
     LIMIT ${chunkSize} OFFSET ${chunkSize * iteration};
   `;
@@ -61,8 +61,6 @@ async function processNetwork(networkId) {
       break;
     }
     const res = await fetchData(networkId, addresses);
-    // console.log(res);
-    // break
     console.log('Processed chunk from ', i * MULTI_CHUNCK_SIZE, ' to ', i * MULTI_CHUNCK_SIZE + res.length);
     await saveBalances(networkId, res);
   }
@@ -70,20 +68,21 @@ async function processNetwork(networkId) {
 }
 
 (async () => {
-  // await processNetwork('1'); // ethereum
-  // await processNetwork('137'); // polygon
-  // await processNetwork('250'); // fantom
-  // await processNetwork('56'); // binance smart chain
-  // await processNetwork('10'); // optimism
-  await processNetwork('25'); // cronos
-  // await processNetwork('100'); // gnosis
-
-  // await processNetwork('1101'); // polygon zkEVM
-  // await processNetwork('1284'); // moonbeam
-  // await processNetwork('1285'); // moonriver
-  // await processNetwork('42161'); // arbitrum one
-  // await processNetwork('42170'); // arbitrum Nova
-  // await processNetwork('42220'); // celo
+  await processNetwork('1'); // ethereum - eth
+  await processNetwork('137'); // polygon - matic
+  await processNetwork('250'); // fantom - ftm
+  await processNetwork('56'); // binance smart chain - bnb
+  await processNetwork('10'); // optimism - eth
+  await processNetwork('25'); // cronos - cro
+  await processNetwork('100'); // gnosis - xdai
+  await processNetwork('1284'); // moonbeam - glmr
+  await processNetwork('1285'); // moonriver - movr
+  await processNetwork('42161');  // arbitrum one - eth
+  await processNetwork('42170'); // arbitrum Nova - eth
+  await processNetwork('42220'); // celo - celo
+  await processNetwork('43114') // avalanche - avax
+  await processNetwork('1666600000') // harmony - one
+  await processNetwork('8453') // base - eth
 
   process.exit(0);
 })();
